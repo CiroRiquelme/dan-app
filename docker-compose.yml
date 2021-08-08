@@ -1,0 +1,116 @@
+services:
+  dan-ms-material:
+   container_name: dan-ms-material
+   image: dan/ms-material:0.0.1-SNAPSHOT     
+   ports:
+    - "9001:8080"
+   environment:
+    - "SPRING_PROFILES_ACTIVE=docker"
+    - "SERVER_PORT=8080"
+    - "SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/ms_material?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+    - "spring.artemis.host=artemis"
+    - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+   networks:
+    - app
+
+  dan-ms-pedidos:
+   container_name: dan-ms-pedidos
+   image: dan/ms-pedidos:0.0.1-SNAPSHOT
+   ports: 
+    - "9002:8080"
+   environment:
+    - "SPRING_PROFILES_ACTIVE=docker"
+    - "SERVER_PORT=8080"
+    - "SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/ms_pedidos?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+    - "spring.artemis.host=artemis"
+    - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+   networks:
+    - app
+
+  zuul-server: 
+    image: dan/zuul-server:0.0.1-SNAPSHOT
+    ports:
+      - "9100:8080"
+    environment:
+      - "SPRING_PROFILES_ACTIVE=docker"
+      - "SERVER_PORT=8080"
+      - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+      - "zuul_routes_pedido_path=/pedido/**"
+      - "zuul_routes_pedido_url=http://dan-ms-pedidos:8080"      
+      - "zuul_routes_material_path=/material/**"
+      - "zuul_routes_material_url=http://dan-ms-material:8080"
+    networks:
+      - app
+
+
+  eureka-server: 
+    image: dan/eureka-server:0.0.1-SNAPSHOT
+    ports:
+      - "8761:8761"
+    environment:
+      - "SPRING_PROFILES_ACTIVE=docker"
+    networks:
+      - app
+
+
+
+  db-mysql:
+   image: mysql
+   command: --default-authentication-plugin=mysql_native_password
+   restart: always
+   environment:
+    MYSQL_ROOT_PASSWORD: root
+   volumes:
+    - ./dan-ms-app.sql:/docker-entrypoint-initdb.d/init.sql
+    - ./mysql-data:/var/lib/mysql
+   networks:
+    - infra
+    - app  
+
+  db-postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: dan
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: dan
+    networks:
+      - infra
+      - app
+    volumes:
+      - ./pg/data:/var/lib/postgresql/data
+          
+  adminer:
+   image: adminer
+   restart: always
+   ports:
+    - 6001:8080
+   networks:
+    - infra
+  
+  artemis:
+   build: .\artemis
+   image: dan-artemis
+   restart: always
+   ports:
+     - "61616:61616" 
+     - "8161:8161"
+     - "5445:5445"
+     - "5672:5672"
+     - "1883:1883" 
+     - "61613:61613"
+   networks:
+     - app
+     - infra   
+  
+networks:
+    infra:
+      driver: bridge
+    app:
+      driver: bridge   
+    
+    
+
+
+
+ 
