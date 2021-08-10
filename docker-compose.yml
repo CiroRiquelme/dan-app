@@ -1,4 +1,18 @@
 services:
+
+  dan-ms-usuarios:
+   container_name: dan-ms-usuarios
+   image: dan/ms-usuarios:0.0.1-SNAPSHOT     
+   ports:
+    - "9000:8080"
+   environment:
+    - "SPRING_PROFILES_ACTIVE=docker"
+    - "SERVER_PORT=8080"
+    - "SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/dan?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+    - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+   networks:
+    - app
+
   dan-ms-material:
    container_name: dan-ms-material
    image: dan/ms-material:0.0.1-SNAPSHOT     
@@ -27,7 +41,21 @@ services:
    networks:
     - app
 
-  zuul-server: 
+  dan-ms-cuenta:
+   container_name: dan-ms-cuenta
+   image: dan/ms-cuenta:0.0.1-SNAPSHOT     
+   ports:
+    - "9003:8080"
+   environment:
+    - "SPRING_PROFILES_ACTIVE=docker"
+    - "SERVER_PORT=8080"
+    - "SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/dan?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+    - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+   networks:
+    - app
+
+  zuul-server:
+    container_name: zuul-server
     image: dan/zuul-server:0.0.1-SNAPSHOT
     ports:
       - "9100:8080"
@@ -39,11 +67,17 @@ services:
       - "zuul_routes_pedido_url=http://dan-ms-pedidos:8080"      
       - "zuul_routes_material_path=/material/**"
       - "zuul_routes_material_url=http://dan-ms-material:8080"
+      - "zuul_routes_usuario_path=/usuario/**"
+      - "zuul_routes_usuario_url=http://dan-ms-usuarios:8080"
+      - "zuul_routes_cuenta_path=/cuenta/**"
+      - "zuul_routes_cuenta_url=http://dan-ms-cuenta:8080"
+      
     networks:
       - app
 
 
   eureka-server: 
+    container_name: eureka-server
     image: dan/eureka-server:0.0.1-SNAPSHOT
     ports:
       - "8761:8761"
@@ -52,9 +86,8 @@ services:
     networks:
       - app
 
-
-
   db-mysql:
+   container_name: db-mysql
    image: mysql
    command: --default-authentication-plugin=mysql_native_password
    restart: always
@@ -68,6 +101,7 @@ services:
     - app  
 
   db-postgres:
+    container_name: db-postgres
     image: postgres
     restart: always
     environment:
@@ -81,6 +115,7 @@ services:
       - ./pg/data:/var/lib/postgresql/data
           
   adminer:
+   container_name: adminer
    image: adminer
    restart: always
    ports:
@@ -89,6 +124,7 @@ services:
     - infra
   
   artemis:
+   container_name: artemis
    build: .\artemis
    image: dan-artemis
    restart: always
@@ -104,6 +140,7 @@ services:
      - infra   
 
   prometheus: 
+    container_name: prometheus
     image: prom/prometheus 
     restart: always 
     volumes:
@@ -115,6 +152,7 @@ services:
       - app
 
   grafana: 
+    container_name: grafana
     image: grafana/grafana
     restart: always
     ports: 

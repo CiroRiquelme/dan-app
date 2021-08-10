@@ -8,4 +8,4 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
 
     static_configs:
-      - targets: ['dan-ms-usuarios:8080', 'dan-ms-pedidos:8080', 'dan-ms-material:8080', 'dan-ms-pagos:8080', 'zuul-server:8080', 'eureka-server:8761']
+      - targets: ['dan-ms-usuarios:8080', 'dan-ms-pedidos:8080', 'dan-ms-material:8080', 'dan-ms-cuenta:8080', 'zuul-server:8080', 'eureka-server:8761']
