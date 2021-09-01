@@ -1,3 +1,7 @@
+volumes: 
+  postgres_data: 
+    driver: local
+
 services:
 
   dan-ms-usuarios:
@@ -26,6 +30,7 @@ services:
     - "SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/ms_material?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&serverTimezone=UTC"
     - "spring.artemis.host=artemis"
     - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+    - "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://keycloak:8080/auth/realms/dan-realm"    
    networks:
     - app
 
@@ -41,6 +46,7 @@ services:
     - "SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/ms_pedidos?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&serverTimezone=UTC"
     - "spring.artemis.host=artemis"
     - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+    - "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://keycloak:8080/auth/realms/dan-realm"  
    networks:
     - app
 
@@ -57,27 +63,6 @@ services:
     - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
    networks:
     - app
-
-  zuul-server:
-    container_name: zuul-server
-    image: criquelme05/dan-zuul-server:latest
-    ports:
-      - "9100:8080"
-    environment:
-      - "SPRING_PROFILES_ACTIVE=docker"
-      - "SERVER_PORT=8080"
-      - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
-      - "zuul_routes_pedido_path=/pedido/**"
-      - "zuul_routes_pedido_url=http://dan-ms-pedidos:8080"      
-      - "zuul_routes_material_path=/material/**"
-      - "zuul_routes_material_url=http://dan-ms-material:8080"
-      - "zuul_routes_usuario_path=/usuario/**"
-      - "zuul_routes_usuario_url=http://dan-ms-usuarios:8080"
-      - "zuul_routes_cuenta_path=/cuenta/**"
-      - "zuul_routes_cuenta_url=http://dan-ms-cuenta:8080"
-      
-    networks:
-      - app
 
   eureka-server: 
     container_name: eureka-server
@@ -107,27 +92,14 @@ services:
     container_name: cloud-gateway
     image: criquelme05/dan-cloud-gateway:latest
     ports:
-      - "9200:8080"
+      - "9100:8080"
     environment:
       - "SPRING_PROFILES_ACTIVE=docker"
       - "SERVER_PORT=8080"
-      - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"      
+      - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+      - "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://keycloak:8080/auth/realms/dan-realm"  
     networks:
       - app
-
-  db-postgres:
-    container_name: db-postgres
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_USER: dan
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: dan
-    networks:
-      - infra
-      - app
-    volumes:
-      - ./pg/data:/var/lib/postgresql/data
           
   adminer:
    container_name: adminer
@@ -174,6 +146,43 @@ services:
       - 3000:3000
     networks: 
       - infra
+
+
+# POSTGRES KEYCLOAK
+  postgres:
+    container_name: postgres
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgressql/data
+    environment: 
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    networks:
+      - infra
+
+  # KEYCLOAK
+  localhost:
+    container_name: keycloak
+    image: jboss/keycloak:latest
+    environment: 
+      DB_VENDOR: POSTGRES 
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_SCHEMA: public 
+      DB_PASSWORD: password 
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_FRONTEND_URL: http://keycloak:8080/auth
+    ports: 
+      - 8090:8080
+    depends_on: 
+      - postgres 
+    networks:
+      - app
+      - infra
+
   
 networks:
     infra:
