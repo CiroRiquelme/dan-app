@@ -6,7 +6,8 @@ services:
 
   dan-ms-usuarios:
    container_name: dan-ms-usuarios
-   image: criquelme05/dan-ms-usuarios:latest     
+   image: dan/ms-usuarios:0.0.1-SNAPSHOT
+   restart: always  
    ports:
     - "9000:8080"
    environment:
@@ -20,7 +21,8 @@ services:
 
   dan-ms-material:
    container_name: dan-ms-material
-   image: criquelme05/dan-ms-material:latest     
+   image: dan/ms-material:0.0.1-SNAPSHOT 
+   restart: always   
    ports:
     - "9001:8080"
    environment:
@@ -36,7 +38,8 @@ services:
 
   dan-ms-pedidos:
    container_name: dan-ms-pedidos
-   image: criquelme05/dan-ms-pedidos:latest
+   image: dan/ms-pedidos:0.0.1-SNAPSHOT
+   restart: always
    ports: 
     - "9002:8080"
    environment:
@@ -52,7 +55,8 @@ services:
 
   dan-ms-cuenta:
    container_name: dan-ms-cuenta
-   image: criquelme05/dan-ms-cuenta:latest     
+   image: dan/ms-cuenta:0.0.1-SNAPSHOT
+   restart: always  
    ports:
     - "9003:8080"
    environment:
@@ -63,6 +67,44 @@ services:
     - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
    networks:
     - app
+
+  dan-ms-blog:
+   container_name: dan-ms-blog
+   image: dan/ms-blog:0.0.1-SNAPSHOT
+   restart: always
+   ports: 
+    - "9005:8080"
+   environment:
+    - "SPRING_PROFILES_ACTIVE=docker"
+    - "SERVER_PORT=8080"
+    - "SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/ms_blog?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+    - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+   networks:
+    - app
+   
+
+  zuul-server:
+    container_name: zuul-server
+    image: criquelme05/dan-zuul-server:latest
+    ports:
+      - "9100:8080"
+    environment:
+      - "SPRING_PROFILES_ACTIVE=docker"
+      - "SERVER_PORT=8080"
+      - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka"
+      - "zuul_routes_pedido_path=/pedido/**"
+      - "zuul_routes_pedido_url=http://dan-ms-pedidos:8080"      
+      - "zuul_routes_material_path=/material/**"
+      - "zuul_routes_material_url=http://dan-ms-material:8080"
+      - "zuul_routes_usuario_path=/usuario/**"
+      - "zuul_routes_usuario_url=http://dan-ms-usuarios:8080"
+      - "zuul_routes_cuenta_path=/cuenta/**"
+      - "zuul_routes_cuenta_url=http://dan-ms-cuenta:8080"
+      - "zuul_routes_blog_path=/blog/**"
+      - "zuul_routes_blog_url=http://dan-ms-blog:8080"
+      
+    networks:
+      - app
 
   eureka-server: 
     container_name: eureka-server
@@ -84,6 +126,8 @@ services:
    volumes:
     - ./dan-ms-app.sql:/docker-entrypoint-initdb.d/init.sql
     - ./mysql-data:/var/lib/mysql
+   ports:
+    - "3306:3306"
    networks:
     - infra
     - app  
@@ -112,7 +156,7 @@ services:
   
   artemis:
    container_name: artemis
-   build: .\artemis
+   build: ./artemis
    image: dan-artemis
    restart: always
    ports:

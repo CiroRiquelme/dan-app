@@ -1,3 +1,56 @@
+CREATE DATABASE IF NOT EXISTS `ms_blog`
+
+USE `ms_blog`;
+
+DROP TABLE IF EXISTS `articulo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `articulo` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `autor` varchar(255) NOT NULL,
+  `descripcion` varchar(255) NOT NULL,
+  `fecha_publicacion` timestamp NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK_6afnsvpg1asa1u2wx3lnsjqpo` (`titulo`)
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `calificacion`
+--
+
+DROP TABLE IF EXISTS `calificacion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `calificacion` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `comentario` varchar(255) DEFAULT NULL,
+  `valor` int NOT NULL,
+  `articulo_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK2rxw3yhwqpceukg9vbvu171ml` (`articulo_id`),
+  CONSTRAINT `FK2rxw3yhwqpceukg9vbvu171ml` FOREIGN KEY (`articulo_id`) REFERENCES `articulo` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `seccion`
+--
+
+DROP TABLE IF EXISTS `seccion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `seccion` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `texto` varchar(1024) NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  `articulo_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK9kwg4wmc95aum5gqqwluq1y9k` (`articulo_id`),
+  CONSTRAINT `FK9kwg4wmc95aum5gqqwluq1y9k` FOREIGN KEY (`articulo_id`) REFERENCES `articulo` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE DATABASE  IF NOT EXISTS `ms_pedidos` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `ms_pedidos`;
 -- MySQL dump 10.13  Distrib 8.0.17, for Win64 (x86_64)
