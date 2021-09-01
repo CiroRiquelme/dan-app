@@ -21,7 +21,7 @@ services:
 
   dan-ms-material:
    container_name: dan-ms-material
-   image: dan/ms-material:0.0.1-SNAPSHOT 
+   image: criquelme05/dan-ms-material:latest
    restart: always   
    ports:
     - "9001:8080"
@@ -38,7 +38,7 @@ services:
 
   dan-ms-pedidos:
    container_name: dan-ms-pedidos
-   image: dan/ms-pedidos:0.0.1-SNAPSHOT
+   image: criquelme05/dan-ms-pedidos:latest
    restart: always
    ports: 
     - "9002:8080"
@@ -87,7 +87,7 @@ services:
     container_name: zuul-server
     image: criquelme05/dan-zuul-server:latest
     ports:
-      - "9100:8080"
+      - "9050:8080"
     environment:
       - "SPRING_PROFILES_ACTIVE=docker"
       - "SERVER_PORT=8080"
